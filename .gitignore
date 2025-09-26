@@ -1,0 +1,6 @@
+.idea/
+*.user
+bin/
+obj/
+appsettings.Development.json
+auth.http
