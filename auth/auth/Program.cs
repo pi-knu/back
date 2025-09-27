@@ -9,6 +9,8 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "5010";
 
         var app = builder.Build();
 
@@ -25,6 +27,6 @@ public class Program
         app.MapGet("/hello", () => "Hello from /hello!");
         
 
-        app.Run("http://0.0.0.0:8081");
+        app.Run($"http://0.0.0.0:{port}");
     }
 }
