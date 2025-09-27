@@ -10,7 +10,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "5010";
+        var port = Environment.GetEnvironmentVariable("PORT");
 
         var app = builder.Build();
 
