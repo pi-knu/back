@@ -1,10 +1,14 @@
 #!/bin/bash
 set -e
+source ./sub-scripts/env.sh
+source ./sub-scripts/msg.sh
 
-echo "** Started init up"
+startMsg
 
-cp ../postgres/example.env ../postgres/.env
+copyEnvs
+
+docker build -t pi-knu-auth:latest ../auth/auth
 
 docker compose -f docker-compose.prod.yml up -d
 
-echo "** Containers started"
+endMsg
