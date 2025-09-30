@@ -4,10 +4,10 @@ EXPOSE 5010
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["./auth.csproj", "auth/"]
+COPY ["./auth.csproj", "auth/"]   
 WORKDIR /src/auth
 RUN dotnet restore "auth.csproj"
-COPY ./. ./
+COPY . ./                      
 RUN dotnet publish "auth.csproj" -c Release -o /app/publish
 
 FROM base AS final
