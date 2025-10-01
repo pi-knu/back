@@ -49,6 +49,13 @@ services:
     depends_on:
       - postgres
 
+  migration:
+    image: pi-knu-dev-migration:latest
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
