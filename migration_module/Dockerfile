@@ -1,14 +1,12 @@
 FROM python:3.11-slim
 
-
 WORKDIR /app
 
+COPY requirements.txt .
+COPY alembic.ini .
+COPY myapp/ ./myapp/
+COPY models.py .
 
-COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-
-COPY . /app
-
-
-ENTRYPOINT ["python", "app.py"]
+ENTRYPOINT ["alembic"]
