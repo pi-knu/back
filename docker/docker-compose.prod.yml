@@ -9,6 +9,10 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    volumes:
+      - ../postgres/init:/docker-entrypoint-initdb.d/
+    entrypoint: >
+      sh -c "chmod +x /docker-entrypoint-initdb.d/init-db.sh && exec docker-entrypoint.sh postgres"
     networks:
       - app-network
     healthcheck:
@@ -48,6 +52,13 @@ services:
       retries: 3
     depends_on:
       - postgres
+
+  migration:
+    image: pi-knu-dev-migration:latest
+    depends_on:
+      - postgres
+    networks:
+      - app-network
 
 networks:
   app-network:
