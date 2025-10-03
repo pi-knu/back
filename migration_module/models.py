@@ -1,16 +1,29 @@
-from sqlalchemy import Column, DateTime, String, Integer, func
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.dialects.postgresql import UUID
+import sqlalchemy as sa
 
 Base = declarative_base()
 metadata = Base.metadata
 
-class Company(Base):
-    __tablename__ = 'company'
-    
-    id = Column(Integer, primary_key=True)
-    name = Column(String(60), unique=True)
-    created_at = Column(DateTime, default=func.now())
-    
-    def __repr__(self):
-        return f"id: {self.id}, name: {self.name}"
-    
+class User(Base):
+    __tablename__ = "users" 
+    id = sa.Column(UUID(as_uuid=True), primary_key=True,
+                   server_default=sa.text("gen_random_uuid()"))
+    email = sa.Column(sa.String(255), nullable=False, unique=True)
+    password = sa.Column(sa.String(255), nullable=False)
+
+    data = relationship("UserData", back_populates="user", uselist=False,
+                        cascade="all, delete-orphan")
+
+class UserData(Base):
+    __tablename__ = "user_data"
+    id = sa.Column(UUID(as_uuid=True), primary_key=True,
+                   server_default=sa.text("gen_random_uuid()"))
+    user_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False)
+    name = sa.Column(sa.String(40))         
+    birth_date = sa.Column(sa.Date())        
+    phone = sa.Column(sa.String(30))
+
+    user = relationship("User", back_populates="data")
