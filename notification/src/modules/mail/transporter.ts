@@ -1,21 +1,21 @@
 import * as nodemailer from 'nodemailer';
 import { ConfigType } from '@nestjs/config';
-import transporterConfig from '../../config/transporter.config';
 import { Provider } from '@nestjs/common';
+import smtpConfig from '../../config/smtp.config';
 
 export const TRANSPORTER_TOKEN = 'MAIL_TRANSPORTER';
 
 export const TRANSPORTER: Provider = {
   provide: TRANSPORTER_TOKEN,
-  inject: [transporterConfig.KEY],
-  useFactory: (transporterConf: ConfigType<typeof transporterConfig>) => {
+  inject: [smtpConfig.KEY],
+  useFactory: (smtpConf: ConfigType<typeof smtpConfig>) => {
     return nodemailer.createTransport({
-      host: transporterConf.host,
-      port: transporterConf.port,
+      host: smtpConf.host,
+      port: smtpConf.port,
       secure: false,
       auth: {
-        user: transporterConf.user,
-        pass: transporterConf.pass,
+        user: smtpConf.user,
+        pass: smtpConf.pass,
       },
     } as nodemailer.TransportOptions);
   },
