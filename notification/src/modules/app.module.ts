@@ -2,9 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import appConfig from '../config/app.config';
 import { MailModule } from './mail/mail.module';
+import { DevMailModule } from './dev-mail/dev-mail.module';
+import * as process from 'node:process';
 
 @Module({
-  imports: [ConfigModule.forRoot({ load: [appConfig] }), MailModule],
+  imports: [
+    ConfigModule.forRoot({ load: [appConfig] }),
+    process.env.NODE_ENV === 'development' ? DevMailModule : MailModule,
+  ],
   controllers: [],
   providers: [],
 })

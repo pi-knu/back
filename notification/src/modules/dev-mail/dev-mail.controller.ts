@@ -1,13 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { SendMailDto } from '../../dto/send_mail.dto';
-import { MailService } from './mail.service';
 
 @Controller('mail')
-export class MailController {
-  constructor(private readonly mailService: MailService) {}
-
+export class DevMailController {
   @Post()
   async sendMail(@Body() data: SendMailDto) {
-    return await this.mailService.sendMail(data);
+    console.log('Send mail:');
+    Object.keys(data).forEach((key) => console.log(key, data[key]));
+    return;
   }
 }
