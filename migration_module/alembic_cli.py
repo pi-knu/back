@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Alembic CLI with auto virtual environment activation
+Alembic CLI - Windows Compatible Version
 """
 
 import os
@@ -8,57 +8,87 @@ import subprocess
 import sys
 from pathlib import Path
 
-def activate_venv():
-    """Automatically activate virtual environment"""
+def is_running_in_docker():
+    """Check if we're running inside a Docker container"""
+    return os.path.exists('/.dockerenv') or os.environ.get('DOCKER_CONTAINER') == 'true'
+
+def setup_environment():
+    """Setup environment based on where we're running"""
+    if is_running_in_docker():
+        print("🐳 Running in Docker container - using system Python")
+        return True
+    else:
+        print("💻 Running locally - setting up virtual environment")
+        return setup_local_environment()
+
+def setup_local_environment():
+    """Setup local development environment with virtual environment"""
     venv_path = Path(".venv")
     
     if not venv_path.exists():
         print("❌ Virtual environment '.venv' not found!")
         print("Please create it with: python -m venv .venv")
-        sys.exit(1)
+        return False
     
     if os.name == 'nt':  # Windows
         python_executable = venv_path / "Scripts" / "python.exe"
-        activate_script = venv_path / "Scripts" / "Activate.ps1"
+        venv_bin = str(venv_path / "Scripts")
     else:  # Linux/Mac
         python_executable = venv_path / "bin" / "python"
-        activate_script = venv_path / "bin" / "activate"
+        venv_bin = str(venv_path / "bin")
     
     if not python_executable.exists():
         print(f"❌ Python executable not found at {python_executable}")
-        sys.exit(1)
+        return False
     
     # Add virtual environment to PATH
-    if os.name == 'nt':
-        venv_bin = str(venv_path / "Scripts")
-    else:
-        venv_bin = str(venv_path / "bin")
-    
     os.environ["PATH"] = venv_bin + os.pathsep + os.environ["PATH"]
+    sys.executable = str(python_executable)
     
     print(f"✅ Virtual environment activated: {venv_path}")
-    return str(python_executable)
+    return True
 
-def check_and_install_alembic():
-    """Check if alembic is installed, offer to install if not"""
+def check_alembic():
+    """Check if alembic is installed"""
     try:
-        subprocess.run([sys.executable, "-m", "alembic", "--version"], 
-                      capture_output=True, check=True)
-        print("✅ Alembic is installed")
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print("❌ Alembic not found in virtual environment")
-        response = input("Would you like to install Alembic now? (y/n): ").strip().lower()
-        if response in ['y', 'yes']:
-            try:
-                print("Installing Alembic...")
-                subprocess.run([sys.executable, "-m", "pip", "install", "alembic"], check=True)
-                print("✅ Alembic installed successfully!")
-                return True
-            except subprocess.CalledProcessError:
-                print("❌ Failed to install Alembic")
-                return False
-        return False
+        # Use shell=True only on Windows, not on Linux/Docker
+        use_shell = os.name == 'nt' and not is_running_in_docker()
+        
+        result = subprocess.run(
+            ["alembic", "--version"],
+            capture_output=True,
+            text=True,
+            shell=use_shell,
+            cwd=os.getcwd()
+        )
+        if result.returncode == 0:
+            print("✅ Alembic is installed")
+            return True
+        else:
+            raise subprocess.CalledProcessError(result.returncode, "alembic --version")
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        if is_running_in_docker():
+            print("❌ Alembic not found in Docker container!")
+            print("Please rebuild the Docker image with Alembic in requirements.txt")
+            print(f"Debug info: {e}")
+            return False
+        else:
+            print("❌ Alembic not found in virtual environment")
+            response = input("Would you like to install Alembic now? (y/n): ").strip().lower()
+            if response in ['y', 'yes']:
+                try:
+                    print("Installing Alembic...")
+                    subprocess.run(
+                        [sys.executable, "-m", "pip", "install", "alembic"], 
+                        check=True,
+                        shell=use_shell
+                    )
+                    print("✅ Alembic installed successfully!")
+                    return True
+                except subprocess.CalledProcessError:
+                    print("❌ Failed to install Alembic")
+                    return False
+            return False
 
 def run_alembic_command(command):
     """Execute an alembic command and return the result"""
@@ -68,75 +98,75 @@ def run_alembic_command(command):
         print(f"🚀 Executing: {' '.join(cmd_parts)}")
         print("-" * 50)
         
+        # Use shell=True only on Windows, not on Linux/Docker
+        use_shell = os.name == 'nt' and not is_running_in_docker()
+        
         # Run the command
         result = subprocess.run(
             cmd_parts,
             capture_output=False,
             text=True,
-            shell=False
+            shell=use_shell,
+            cwd=os.getcwd()
         )
         
         print("-" * 50)
         return result.returncode == 0
         
     except FileNotFoundError:
-        print("❌ Error: Alembic command failed.")
+        print("❌ Error: Alembic command not found.")
+        print("Make sure alembic is installed in your virtual environment.")
         return False
     except Exception as e:
         print(f"❌ Error executing command: {e}")
+        print(f"Error type: {type(e).__name__}")
         return False
 
-def main():
-    print("🔧 Alembic Interactive CLI")
-    print("=" * 45)
-    
-    # Auto-activate virtual environment
-    python_executable = activate_venv()
-    
-    # Update sys.executable to use venv Python
-    sys.executable = python_executable
-    
-    # Check if alembic is installed
-    if not check_and_install_alembic():
-        print("❌ Cannot continue without Alembic.")
-        sys.exit(1)
-    
+def interactive_mode():
+    """Run in interactive CLI mode"""
     print("\n✅ Ready! Type 'help' for available commands, 'exit' to quit")
     print("=" * 45)
     
     while True:
         try:
-            # Get user input
             user_input = input("\nalembic> ").strip()
             
-            # Handle special commands
             if user_input.lower() in ['exit', 'quit', 'q']:
                 print("👋 Goodbye!")
                 break
-                
             elif user_input.lower() in ['help', '?']:
                 show_help()
-                continue
-                
             elif user_input.lower() == 'status':
                 show_status()
-                continue
-                
             elif user_input.lower() == '':
                 continue
-                
-            # Execute alembic command
-            success = run_alembic_command(user_input)
-            
-            if not success:
-                print(f"❌ Command failed: {user_input}")
-                
+            else:
+                if not run_alembic_command(user_input):
+                    print(f"❌ Command failed: {user_input}")
+                    
         except KeyboardInterrupt:
             print("\n\n👋 Goodbye!")
             break
         except EOFError:
             print("\n\n👋 Goodbye!")
             break
+
+def main():
+    print("🔧 Alembic Interactive CLI")
+    print("=" * 45)
+    
+    # Setup environment
+    if not setup_environment():
+        print("❌ Environment setup failed")
+        sys.exit(1)
+    
+    # Check if alembic is installed
+    if not check_alembic():
+        print("❌ Cannot continue without Alembic.")
+        sys.exit(1)
+    
+    # Interactive mode
+    interactive_mode()
 
 def show_status():
     """Show current migration status"""
