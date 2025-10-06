@@ -4,6 +4,7 @@ Alembic CLI - Windows Compatible Version
 """
 
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -93,7 +94,7 @@ def check_alembic():
 def run_alembic_command(command):
     """Execute an alembic command and return the result"""
     try:
-        cmd_parts = ["alembic"] + command.split()
+        cmd_parts = ["alembic"] + shlex.split(command, posix=(os.name != 'nt'))
         
         print(f"🚀 Executing: {' '.join(cmd_parts)}")
         print("-" * 50)
