@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Notification
+  version: 1.0.0
+  description: >
+    Simple API for mail operations and health checking in a NestJS application.
+servers:
+  - url: http://localhost:80/
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Application health check
+      description: Checks the health status of the application and connected services.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  status: ok
+        '500':
+          description: Service is unavailable
+
+  /mail/forgot:
+    post:
+      summary: Send forgot password mail
+      description: |
+        Sends a password reset (forgot mail) message to a user.
+
+        In **development mode**, the email sending URL will be printed to the container logs instead of actually sending the message.
+      tags:
+        - Mail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotMailDto'
+      responses:
+        '200':
+          description: Mail sent successfully (no response body)
+        '400':
+          description: Invalid request body
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    ForgotMailDto:
+      type: object
+      required:
+        - to
+        - id
+      properties:
+        to:
+          type: string
+          format: email
+          description: Recipient email address
+          example: user@example.com
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the request
+          example: "550e8400-e29b-41d4-a716-446655440000"
