@@ -9,6 +9,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT;
+const NGINX: boolean = process.env.NGINX === 'true';
 
 // === 1. Directory containing YAML files ===
 const docsDir = path.resolve('./docs');
@@ -21,18 +22,25 @@ files.forEach(file => {
     const filePath = path.join(docsDir, file);
     const swaggerDocument = YAML.load(filePath);
 
-    app.use(`/docs/${name}`, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-    console.log(`📘 Loaded Swagger doc: ${file} → http://localhost:${PORT}/docs/${name}`);
+    app.use(`/${name}`, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 });
+
+const docsPath = NGINX ? '/docs' : '';
 
 app.get('/', (_, res) => {
     res.send(`
     <h2>Available Swagger Docs:</h2>
     <ul>
-      ${files.map(f => `<li><a href="/docs/${f.replace('.yaml', '')}">${f}</a></li>`).join('')}
+      ${files
+        .map(f => {
+            const name = f.replace('.yaml', '');
+            return `<li><a href="${docsPath}/${name}/">${name}</a></li>`;
+        })
+        .join('')}
     </ul>
   `);
 });
+
 
 app.get('/health', (_, res) => {
     res.status(200).send('OK');
