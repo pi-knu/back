@@ -24,9 +24,9 @@ public class Program
         app.UseAuthorization();
 
         // Тести / маршрути
-        app.MapGet("/", () => "Hello, world!");
-        app.MapGet("/hello", () => "Hello from /hello!");
-        app.MapHealthChecks("/health");
+        app.MapGet("/auth", () => "Hello, world!");
+        app.MapGet("/auth/hello", () => "Hello from /hello!");
+        app.MapHealthChecks("/auth/health");
 
 
         app.Run($"http://0.0.0.0:{port}");
