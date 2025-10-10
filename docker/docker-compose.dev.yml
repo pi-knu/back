@@ -36,12 +36,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    depends_on:
-      - auth
 
   auth:
     image: mcr.microsoft.com/dotnet/sdk:8.0
-    container_name: auth-service
+    container_name: auth-dev
     working_dir: /auth
     volumes:
       - ../auth/auth/:/auth
@@ -49,14 +47,49 @@ services:
     env_file:
       - ../auth/.env
     restart: unless-stopped
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5010/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
-    depends_on:
-      - postgres
 
+  notification:
+    image: node:20
+    container_name: notification-dev
+    env_file: ../notification/.env
+    working_dir: /app
+    volumes:
+      - ../notification/:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run start:dev"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5012/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  docs:
+    image: node:20
+    container_name: docs-dev
+    env_file: ../docs/.env
+    working_dir: /app
+    volumes:
+      - ../docs/:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5013/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
   app-network:

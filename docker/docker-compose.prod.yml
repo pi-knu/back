@@ -54,11 +54,21 @@ services:
       - postgres
 
   migration:
-    image: pi-knu-dev-migration:latest
+    image: pi-knu-migration:latest
     depends_on:
       - postgres
     networks:
       - app-network
+
+  notification:
+    image: pi-knu-notification:latest
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5012/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
   app-network:
