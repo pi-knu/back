@@ -5,7 +5,7 @@ info:
   description: >
     Simple API for mail operations and health checking in a NestJS application.
 servers:
-  - url: http://localhost:80/
+  - url: http://localhost:80/docs/
     description: Local development server
 
 paths:
