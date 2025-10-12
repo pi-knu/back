@@ -62,6 +62,16 @@ services:
     networks:
       - app-network
 
+  notification:
+    image: pi-knu-notification:latest
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5012/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
 networks:
   app-network:
     driver: bridge
