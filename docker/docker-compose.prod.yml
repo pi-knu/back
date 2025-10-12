@@ -55,6 +55,8 @@ services:
 
   migration:
     image: pi-knu-migration:latest
+    env_file:
+      - ../migration_module/.env
     depends_on:
       - postgres
     networks:
