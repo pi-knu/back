@@ -23,8 +23,15 @@ $ docker compose -f docker-compose.dev.yml up -d
 ```
 
 ### Prod:
+**Notice**: You need add smtp data to `notification/.env`
 ```bash
 $ cp ../postgres/example.env ../postgres/.env
+
+$ cp ../auth/example.env ../auth/.env
+
+$ cp ../notification/example.env ../notification/.env
+
+$ cp ../docs/example.env ../docs/.env
 
 $ docker compose -f docker-compose.prod.yml up -d
 ```
