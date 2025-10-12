@@ -1,11 +1,21 @@
-FROM node:20
-
+FROM node:20 AS deps
 WORKDIR /app
-COPY . .
-
+COPY package*.json ./
 RUN npm install
 
-ENV APP_PORT=5012
-EXPOSE ${APP_PORT}
+FROM node:20 AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
 
-CMD ["npm", "run", "start:dev"]
+FROM node:20 AS runner
+WORKDIR /app
+
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY package*.json ./
+
+EXPOSE 80
+
+CMD ["node", "dist/main.js"]

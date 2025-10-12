@@ -32,7 +32,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost/auth/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -50,7 +50,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5010/auth/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost/auth/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -68,7 +68,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5012/notification/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost/notification/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -86,7 +86,31 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5013/docs/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost/docs/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  migrations:
+    image: python:3.11-slim
+    container_name: migrations-service
+    working_dir: /app
+    volumes:
+      - ../migration_module/:/app
+    command: >
+      bash -c "
+        chmod +x alembic_cli.py &&
+        pip install --no-cache-dir -r requirements.txt &&
+        echo 'Container ready, run: python alembic_cli.py' &&
+        tail -f /dev/null
+      "
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'ok'"]
       interval: 30s
       timeout: 5s
       retries: 3

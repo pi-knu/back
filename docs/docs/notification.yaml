@@ -3,7 +3,8 @@ info:
   title: Notification
   version: 1.0.0
   description: >
-    Simple API for mail operations and health checking in a NestJS application.
+    You can use this module only from the backend — Nginx doesn’t make it available to users’ PCs.
+    If you using NODE_ENV=development, find all links in logs of container
 servers:
   - url: http://localhost:80/docs/
     description: Local development server
@@ -44,7 +45,7 @@ paths:
               $ref: '#/components/schemas/ForgotMailDto'
       responses:
         '200':
-          description: Mail sent successfully (no response body)
+          description: Mail sent successfully (no response body) you can find link in logs of container
         '400':
           description: Invalid request body
         '500':

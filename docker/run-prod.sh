@@ -9,7 +9,9 @@ copyEnvs
 
 docker build -t pi-knu-auth:latest ../auth/auth
 
-docker build -t pi-knu-migration:latest ../migration-module
+docker build -t pi-knu-migration:latest ../migration_module
+
+docker build -t pi-knu-notification:latest ../notification
 
 docker compose -f docker-compose.prod.yml up -d
 

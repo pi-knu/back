@@ -1,4 +1,4 @@
-name: pi-knu-dev
+name: pi-knu-prod
 
 services:
   postgres:
@@ -46,7 +46,7 @@ services:
       - ../auth/.env
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5010/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost/auth/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -57,6 +57,11 @@ services:
     image: pi-knu-migration:latest
     env_file:
       - ../migration_module/.env
+    command: >
+      sh -c "
+        pip install --no-cache-dir -r requirements.txt &&
+        alembic upgrade head
+      "
     depends_on:
       - postgres
     networks:
@@ -64,10 +69,12 @@ services:
 
   notification:
     image: pi-knu-notification:latest
+    env_file:
+      - ../notification/.env
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5012/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
