@@ -16,7 +16,12 @@ files.forEach(file => {
     const filePath = path.join(docsDir, file);
     const swaggerDocument = YAML.load(filePath);
 
-    router.use(`/${name}`, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+    const subRouter = express.Router();
+
+    //Create local swagger serve for current file (because serve is global, he can load only 1 doc)
+    subRouter.use('/', swaggerUi.serveFiles(swaggerDocument, {}));
+    subRouter.get('/', swaggerUi.setup(swaggerDocument));
+    router.use(`/${name}`, subRouter);
 });
 
 router.get('/', (_, res) => {
