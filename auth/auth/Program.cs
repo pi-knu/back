@@ -28,7 +28,6 @@ public class Program
         app.MapGet("/auth/hello", () => "Hello from /hello!");
         app.MapHealthChecks("/auth/health");
 
-
         app.Run($"http://0.0.0.0:{port}");
     }
 }

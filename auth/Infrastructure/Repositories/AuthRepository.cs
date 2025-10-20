@@ -1,9 +1,11 @@
-using Data.Entities;
+using Application.Interfaces;
+using Domain.Entities;
+using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Data.Repositories;
+namespace Infrastructure.Repositories;
 
-public class AuthRepository(DataContext dataContext)
+public class AuthRepository(DataContext dataContext) : IAuthRepository
 {
     public async Task AddUserAsync(Users user)
     {
@@ -17,3 +19,4 @@ public class AuthRepository(DataContext dataContext)
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 }
+
