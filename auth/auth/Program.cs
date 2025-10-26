@@ -1,3 +1,10 @@
+using Application;
+using Application.Interfaces;
+using Application.Services;
+using Domain.Entities;
+using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication;
+
 namespace auth;
 
 public class Program
@@ -10,6 +17,13 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHealthChecks();
+
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+        
+        builder.Services.AddScoped<IJwtProvider, JwtProvider>();
+        builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+        builder.Services.AddScoped<JwtOptions>();
         
         var port = Environment.GetEnvironmentVariable("PORT");
 
