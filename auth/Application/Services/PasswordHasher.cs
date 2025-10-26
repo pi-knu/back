@@ -1,6 +1,8 @@
+using Domain.Entities;
+
 namespace Application;
 
-public class PasswordHasher
+public class PasswordHasher : IPasswordHasher
 {
     public string HashPassword(string password)
     {
