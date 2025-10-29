@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Dtos;
+using Application.Interfaces;
 using Domain.Entities;
 namespace Application;
 
@@ -8,24 +9,44 @@ public class AuthService(IAuthRepository repository, IPasswordHasher hasher, IJw
 {
     private static readonly Dictionary<Guid, string> _tokenCache = new();
 
-    public async Task<Users> Register(string email, string password)
+    public async Task<RegisterResponse> RegisterAsync(string email, string password)
     {
-		var hashedPassword = hasher.HashPassword(password);
-
+        var existingUser = await repository.GetUserByEmailAsync(email);
+        if (existingUser is not null)
+            throw new InvalidOperationException("User with this email already exists.");
+        
+        if (!IsValidEmail(email))
+            throw new ArgumentException("Invalid email format.");
+        
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+            throw new ArgumentException("Password must be at least 6 characters long.");
+        
+        var hashedPassword = hasher.HashPassword(password);
+        
         var user = new Users
         {
             Email = email,
             Password = hashedPassword,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
-        
+
         await repository.AddUserAsync(user);
         
-        // TODO: add dto
-        
-        return user;
+        return new RegisterResponse(user.Email, user.CreatedAt);
     }
-    
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
     public async Task<string?> Login(string email, string password)
     {
         var user = await repository.GetUserByEmailAsync(email);
