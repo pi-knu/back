@@ -124,6 +124,7 @@ services:
       - app-network
     depends_on:
       - postgres
+      - nginx
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost/users/health || exit 1"]
       interval: 30s
