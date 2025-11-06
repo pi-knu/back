@@ -119,16 +119,14 @@ services:
     container_name: users-dev
     env_file:
       - ../users/.env
-    ports:
-      - "5011:5011"
     restart: unless-stopped
     networks:
       - app-network
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5011/users/health || exit 1"]
-      interval: 10s
+      test: ["CMD-SHELL", "curl -f http://localhost/users/health || exit 1"]
+      interval: 30s
       timeout: 5s
       retries: 3
 

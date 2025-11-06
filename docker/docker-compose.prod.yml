@@ -53,6 +53,23 @@ services:
     depends_on:
       - postgres
 
+  users:
+    image: pi-knu-users:latest
+    container_name: users-prod
+    env_file:
+      - ./users/.env
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+      - migration
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost/users/health || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   migration:
     image: pi-knu-migration:latest
     env_file:
