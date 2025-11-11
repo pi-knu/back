@@ -2,6 +2,6 @@ namespace Application.Services;
 
 public class JwtOptions
 {
-    public string SecretKey { get; set; } = String.Empty;
-    public int ExpireHours { get; set; } = 2;
+    public string SecretKey { get; set; } = string.Empty;
+    public int ExpireHours { get; set; } 
 }

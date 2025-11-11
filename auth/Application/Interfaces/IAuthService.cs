@@ -6,6 +6,6 @@ namespace Application.Interfaces;
 public interface IAuthService
 {
     Task<RegisterResponse> RegisterAsync(string email, string password);
-    Task<string?> Login(string email, string password);
-    Task<string?> Refresh(string refreshToken);
+    Task<LoginResponse> LoginAsync(string email, string password);
+    Task<RefreshTokenResponse> RefreshAsync(string refreshToken);
 }

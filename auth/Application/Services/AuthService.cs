@@ -3,7 +3,6 @@ using Application.Interfaces;
 using Domain.Entities;
 namespace Application;
 
-// TODO: make map to dto in controller
 
 public class AuthService(IAuthRepository repository, IPasswordHasher hasher, IJwtProvider provider):IAuthService
 {
@@ -47,41 +46,46 @@ public class AuthService(IAuthRepository repository, IPasswordHasher hasher, IJw
             return false;
         }
     }
-    public async Task<string?> Login(string email, string password)
+    public async Task<LoginResponse> LoginAsync(string email, string password)
     {
         var user = await repository.GetUserByEmailAsync(email);
-        
-        if(user == null) return null;
-        
-       var result = hasher.VerifyHashedPassword(user.Password, password);
-       
-       if(!result) 
-           throw new UnauthorizedAccessException("Invalid password");
-        
-       var token = provider.GenerateToken(user);
-       var refreshToken = provider.GenerateRefreshToken();
-       
-       _tokenCache[user.Id] = refreshToken;
 
-       
-       return token;
-       // TODO: implement dto to controller
+        if (user is null)
+            throw new UnauthorizedAccessException("User not found.");
+
+        var passwordValid = hasher.VerifyHashedPassword(user.Password, password);
+
+        if (!passwordValid)
+            throw new UnauthorizedAccessException("Invalid password.");
+        
+        var accessToken = provider.GenerateToken(user);
+        var refreshToken = provider.GenerateRefreshToken();
+        
+        _tokenCache[user.Id] = refreshToken;
+
+        return new LoginResponse(accessToken, refreshToken);
     }
+
     
-    public async Task<string?> Refresh(string refreshToken)
+    public async Task<RefreshTokenResponse> RefreshAsync(string refreshToken)
     {
         var userEntry = _tokenCache.FirstOrDefault(x => x.Value == refreshToken);
+
         if (userEntry.Key == Guid.Empty)
-            throw new UnauthorizedAccessException("Invalid refresh token");
+            throw new UnauthorizedAccessException("Invalid refresh token.");
 
         var userId = userEntry.Key;
-        var user = new Users { Id = userId }; 
-
+        
+        var user = await repository.GetUserByIdAsync(userId);
+        if (user is null)
+            throw new UnauthorizedAccessException("User not found.");
+        
         var newAccessToken = provider.GenerateToken(user);
         var newRefreshToken = provider.GenerateRefreshToken();
-
+        
         _tokenCache[userId] = newRefreshToken;
 
-        return newAccessToken;
+        return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
+
 }

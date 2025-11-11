@@ -4,6 +4,7 @@ using Application.Services;
 using Domain.Entities;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.CookiePolicy;
 
 namespace auth;
 
@@ -12,6 +13,9 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        builder.Services.Configure<JwtOptions>(
+            builder.Configuration.GetSection("JwtOptions"));
 
         builder.Services.AddAuthorization();
         builder.Services.AddEndpointsApiExplorer();
@@ -34,6 +38,14 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        
+        app.UseRouting(); 
+        app.UseCookiePolicy(new CookiePolicyOptions
+        {
+            MinimumSameSitePolicy = SameSiteMode.Strict,
+            HttpOnly = HttpOnlyPolicy.Always,
+            Secure = CookieSecurePolicy.Always
+        });
 
         app.UseAuthorization();
 

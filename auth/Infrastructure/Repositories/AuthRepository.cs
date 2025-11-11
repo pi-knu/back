@@ -18,5 +18,11 @@ public class AuthRepository(DataContext dataContext) : IAuthRepository
         return await dataContext.Users
             .FirstOrDefaultAsync(u => u.Email == email);
     }
+
+    public async Task<Users?> GetUserByIdAsync(Guid userId)
+    {
+        return await dataContext.Users
+            .FirstOrDefaultAsync(u=> u.Id == userId);
+    }
 }
 
