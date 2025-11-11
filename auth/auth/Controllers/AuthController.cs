@@ -7,7 +7,7 @@ using LoginRequest = Microsoft.AspNetCore.Identity.Data.LoginRequest;
 namespace auth.Controllers;
 
 [ApiController]
-[Microsoft.AspNetCore.Components.Route("api/[controller]")]
+[Route("[controller]")]
 
 public class AuthController : ControllerBase
 {

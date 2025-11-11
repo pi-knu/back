@@ -3,8 +3,10 @@ using Application.Interfaces;
 using Application.Services;
 using Domain.Entities;
 using Infrastructure.Repositories;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.EntityFrameworkCore;
 
 namespace auth;
 
@@ -13,7 +15,10 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        
+
+        builder.Services.AddDbContext<DataContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
         builder.Services.Configure<JwtOptions>(
             builder.Configuration.GetSection("JwtOptions"));
 
@@ -28,6 +33,8 @@ public class Program
         builder.Services.AddScoped<IJwtProvider, JwtProvider>();
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
         builder.Services.AddScoped<JwtOptions>();
+
+        builder.Services.AddControllers();
         
         var port = Environment.GetEnvironmentVariable("PORT");
 
@@ -48,6 +55,7 @@ public class Program
         });
 
         app.UseAuthorization();
+        app.MapControllers();
 
         // Тести / маршрути
         app.MapGet("/auth", () => "Hello, world!");

@@ -42,8 +42,8 @@ services:
     container_name: auth-dev
     working_dir: /auth
     volumes:
-      - ../auth/auth/:/auth
-    command: [ "dotnet", "run", "--urls", "http://0.0.0.0:5010" ]
+      - ../auth/:/auth
+    command: [ "dotnet", "run", "--urls", "http://0.0.0.0", "--project", "auth/auth.csproj" ]
     env_file:
       - ../auth/.env
     restart: unless-stopped
