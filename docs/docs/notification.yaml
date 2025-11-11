@@ -6,7 +6,7 @@ info:
     You can use this module only from the backend — Nginx doesn’t make it available to users’ PCs.
     If you using NODE_ENV=development, find all links in logs of container
 servers:
-  - url: http://localhost:80/docs/
+  - url: http://localhost/notification/
     description: Local development server
 
 paths:

@@ -9,4 +9,6 @@ copyEnvs() {
   cp ../notification/example.env ../notification/.env
 
   cp ../docs/example.env ../docs/.env
+
+  cp ../migration_module/example.env ../migration_module/.env
 }

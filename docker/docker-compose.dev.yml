@@ -104,8 +104,6 @@ services:
         echo 'Container ready, run: python alembic_cli.py' &&
         tail -f /dev/null
       "
-    depends_on:
-      - postgres
     networks:
       - app-network
     restart: "no"
