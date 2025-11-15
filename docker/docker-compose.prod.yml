@@ -57,7 +57,7 @@ services:
     image: pi-knu-users:latest
     container_name: users-prod
     env_file:
-      - ../users/.env
+      - ../flask_app/.env
     restart: unless-stopped
     networks:
       - app-network
