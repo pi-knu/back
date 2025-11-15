@@ -61,9 +61,6 @@ services:
     restart: unless-stopped
     networks:
       - app-network
-    depends_on:
-      - postgres
-      - migration
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost/users/health || exit 1" ]
       interval: 30s

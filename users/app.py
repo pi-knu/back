@@ -26,56 +26,6 @@ def health():
     except Exception as e:
         return jsonify({"status": "error", "detail": str(e)}), 500
 
-# Create user endpoint
-@app.route("/users", methods=["POST"])
-def create_user():
-    """Create a new user with optional profile data."""
-    payload = request.get_json() or {}
-    email = payload.get("email")
-    password = payload.get("password")
-    data_payload = payload.get("data")
-
-    if not email or not password:
-        return jsonify({"error": "email and password required"}), 400
-
-    try:
-        with get_session() as s:
-            # Check if email already exists
-            existing = s.query(User).filter(User.email == email).first()
-            if existing:
-                return jsonify({"error": "email already exists"}), 409
-
-            # Create new user
-            user = User(email=email, password=password)
-            s.add(user)
-            s.flush()
-
-            # Get user data (should exist from trigger/default)
-            ud = s.query(UserData).filter(UserData.user_id == user.id).one_or_none()
-
-            # Update user data if provided
-            if data_payload and ud:
-                name = data_payload.get("name")
-                phone = data_payload.get("phone")
-                birth_date_raw = data_payload.get("birth_date")
-
-                if name is not None:
-                    ud.name = name
-                if phone is not None:
-                    ud.phone = phone
-                if birth_date_raw is not None:
-                    try:
-                        ud.birth_date = datetime.strptime(birth_date_raw, "%Y-%m-%d").date()
-                    except ValueError:
-                        return jsonify({"error": "birth_date must be YYYY-MM-DD"}), 400
-
-            return jsonify({"id": str(user.id), "email": user.email}), 201
-
-    except IntegrityError as ie:
-        return jsonify({"error": "integrity error", "detail": str(ie.orig)}), 409
-    except Exception as e:
-        return jsonify({"error": "internal error", "detail": str(e)}), 500
-
 # Get user endpoint
 @app.route("/users/<user_id>", methods=["GET"])
 def get_user(user_id):

@@ -112,14 +112,20 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      
   users:
-    build:
-      context: ../users
-      dockerfile: Dockerfile
+    image: python:3.11-slim
     container_name: users-dev
+    working_dir: /app
+    volumes:
+      - ../users/:/app
     env_file:
       - ../users/.env
     restart: unless-stopped
+    command: >
+      bash -lc "pip install --no-cache-dir -r requirements.txt fi &&
+        exec python app.py
+      "
     networks:
       - app-network
     depends_on:
