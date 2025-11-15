@@ -41,7 +41,7 @@ def get_user(user_id):
         return jsonify({"id": str(u.id), "email": u.email, "data": data}), 200
 
 
-@bp.route("/<user_id>", methods=["PUT", "PATCH"])
+@bp.route("/<user_id>", methods=["PATCH"])
 def update_user(user_id):
     try:
         uid = uuid.UUID(user_id)

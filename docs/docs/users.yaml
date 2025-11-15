@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Users Service
+  version: 1.0.0
+  description: >
+    User management service for handling user accounts and profile data.
+servers:
+  - url: http://localhost/users/
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Application health check
+      description: Checks the health status of the application and database connection.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '500':
+          description: Service is unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  detail:
+                    type: string
+                    example: "Database connection failed"
+
+  /{user_id}:
+    get:
+      summary: Get user by ID
+      description: Retrieves user information including profile data by user ID.
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: User UUID
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid UUID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "invalid uuid"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "not found"
+
+    patch:
+      summary: Update user 
+      description: Updates user information. Only updates provided fields.
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: User UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                    format: email
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "not found"
+
+components:
+  schemas:
+    UserData:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 40
+          nullable: true
+          example: "John Doe"
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1990-01-15"
+        phone:
+          type: string
+          maxLength: 30
+          nullable: true
+          example: "+380501234567"
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        data:
+          $ref: '#/components/schemas/UserData'
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: "newemail@example.com"
+        password:
+          type: string
+          maxLength: 255
+          example: "newSecurePassword123"
+        data:
+          $ref: '#/components/schemas/UserData'
+      example:
+        email: "user@example.com"
+        password: "securePassword123"
+        data:
+          name: "John Doe"
+          birth_date: "1990-01-15"
+          phone: "+380501234567"
