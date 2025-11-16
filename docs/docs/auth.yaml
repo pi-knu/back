@@ -6,7 +6,7 @@ info:
     Authentication module for backend use. Access tokens are returned in the response body,
     refresh tokens are stored in HttpOnly cookies.
 servers:
-  - url: http://localhost:80/docs/
+  - url: http://localhost:80/auth/
     description: Local development server
 
 paths:

@@ -7,6 +7,7 @@ using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
 
 namespace auth;
 
@@ -15,12 +16,28 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        Env.Load();
+
+        var dbHost = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "postgres";
+        var dbPort = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432";
+        var dbName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "main";
+        var dbUser = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres";
+        var dbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
+
+        var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+        
+        builder.Services.Configure<JwtOptions>(options =>
+        {
+            options.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "";
+            options.ExpiresHours = int.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRES_HOURS") ?? "12");
+            options.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "http://localhost/docs/auth/";
+        });
+
+        builder.Configuration.AddEnvironmentVariables();
 
         builder.Services.AddDbContext<DataContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-        builder.Services.Configure<JwtOptions>(
-            builder.Configuration.GetSection("JwtOptions"));
+            options.UseNpgsql(connectionString));
 
         builder.Services.AddAuthorization();
         builder.Services.AddEndpointsApiExplorer();
@@ -32,7 +49,6 @@ public class Program
         
         builder.Services.AddScoped<IJwtProvider, JwtProvider>();
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-        builder.Services.AddScoped<JwtOptions>();
 
         builder.Services.AddControllers();
         
@@ -58,8 +74,6 @@ public class Program
         app.MapControllers();
 
         // Тести / маршрути
-        app.MapGet("/auth", () => "Hello, world!");
-        app.MapGet("/auth/hello", () => "Hello from /hello!");
         app.MapHealthChecks("/auth/health");
 
         app.Run($"http://0.0.0.0:{port}");
