@@ -3,9 +3,10 @@ info:
   title: Auth
   version: 1.0.0
   description: >
-    You can use this module
+    Authentication module for backend use. Access tokens are returned in the response body,
+    refresh tokens are stored in HttpOnly cookies.
 servers:
-  - url: http://localhost/auth/
+  - url: http://localhost:80/auth/
     description: Local development server
 
 paths:
@@ -26,3 +27,125 @@ paths:
                   status: ok
         '500':
           description: Service is unavailable
+
+  /register:
+    post:
+      summary: Register a new user
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "User registered successfully"
+        '400':
+          description: Invalid request
+        '409':
+          description: User already exists
+        '500':
+          description: Internal server error
+
+  /login:
+    post:
+      summary: User login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful. Access token returned in JSON, refresh token set in HttpOnly cookie.
+          headers:
+            Set-Cookie:
+              description: Refresh token stored as HttpOnly cookie
+              schema:
+                type: string
+                example: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  message:
+                    type: string
+                    example: "Login successful"
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+
+  /refresh:
+    post:
+      summary: Refresh access token
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: New access token returned in JSON, refresh token updated in HttpOnly cookie.
+          headers:
+            Set-Cookie:
+              description: Refresh token updated as HttpOnly cookie
+              schema:
+                type: string
+                example: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  message:
+                    type: string
+                    example: "Tokens refreshed successfully"
+        '401':
+          description: No or invalid refresh token
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: StrongPassword123
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: StrongPassword123
