@@ -3,6 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from controllers.users import bp as users_bp
+from controllers.lots import bp as lots_bp
 
 
 def create_app():
@@ -11,6 +12,7 @@ def create_app():
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     app.register_blueprint(users_bp)
+    app.register_blueprint(lots_bp)
 
     return app
 

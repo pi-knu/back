@@ -113,9 +113,9 @@ services:
       timeout: 5s
       retries: 3
       
-  users:
+  flask-backend:
     image: python:3.11-slim
-    container_name: users-dev
+    container_name: flask-backend-dev
     working_dir: /app
     volumes:
       - ../flask_app/:/app

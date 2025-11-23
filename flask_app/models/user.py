@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 
-from ..database import Base
+from database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -14,6 +14,12 @@ class User(Base):
     password = Column(String(255), nullable=False)
 
     data = relationship("UserData", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
+    # One-to-many: all lots created by this user
+    
+    lots = relationship(
+        "Lot", back_populates="user", cascade="all, delete-orphan",
+    )
 
 
 class UserData(Base):

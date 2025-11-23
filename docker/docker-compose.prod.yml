@@ -53,9 +53,9 @@ services:
     depends_on:
       - postgres
 
-  users:
+  flask-backend:
     image: pi-knu-users:latest
-    container_name: users-prod
+    container_name: flask-backend-prod
     env_file:
       - ../flask_app/.env
     restart: unless-stopped
