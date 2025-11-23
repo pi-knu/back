@@ -112,6 +112,31 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      
+  users:
+    image: python:3.11-slim
+    container_name: users-dev
+    working_dir: /app
+    volumes:
+      - ../flask_app/:/app
+    env_file:
+      - ../flask_app/.env
+    restart: unless-stopped
+    command: >
+      bash -lc "
+        pip install --no-cache-dir -r requirements.txt &&
+        exec python app.py
+      "
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+      - nginx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/users/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
   app-network:

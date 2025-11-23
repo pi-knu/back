@@ -42,23 +42,26 @@ def upgrade() -> None:
 
     # 3) create user_data table
     op.create_table(
-        'user_data',
-        sa.Column(
-            'id',
-            pg.UUID(as_uuid=True),
-            primary_key=True,
-            server_default=sa.text('uuid_generate_v4()'),
-            nullable=False,
-        ),
-        sa.Column(
-            'user_id',
-            pg.UUID(as_uuid=True),
-            nullable=False,
-        ),
-        sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-        sa.UniqueConstraint('user_id', name='uq_user_data_user_id')
-    )
+    'user_data',
+    sa.Column(
+        'id',
+        pg.UUID(as_uuid=True),
+        primary_key=True,
+        server_default=sa.text('uuid_generate_v4()'),
+        nullable=False,
+    ),
+    sa.Column(
+        'user_id',
+        pg.UUID(as_uuid=True),
+        nullable=False,
+    ),
+    sa.Column('name', sa.String(length=40), nullable=True),
+    sa.Column('birth_date', sa.DATE(), nullable=True),
+    sa.Column('phone', sa.String(length=30), nullable=True),
+    sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.UniqueConstraint('user_id', name='uq_user_data_user_id')
+)
 
     # 4) create trigger function
     op.execute(
