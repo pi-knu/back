@@ -4,6 +4,7 @@ from flask_cors import CORS
 
 from controllers.users import bp as users_bp
 from controllers.lots import bp as lots_bp
+from controllers.health import bp as health_bp
 
 
 def create_app():
@@ -13,6 +14,7 @@ def create_app():
 
     app.register_blueprint(users_bp)
     app.register_blueprint(lots_bp)
+    app.register_blueprint(health_bp)
 
     return app
 

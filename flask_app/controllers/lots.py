@@ -166,110 +166,57 @@ def get_lot(lot_id: str):
         ), 200
 
 @bp.route("/<lot_id>", methods=["PATCH"])
-def update_lot(lot_id: str):
-    """
-    Partially update lot data and optionally replace all photos.
-
-    Expected JSON body (all fields optional, only provided ones will be updated):
-    {
-        "name": "string",
-        "description": "string or null",
-        "min_price": 120.0,
-        "min_step": 10.0,
-        "current_price": 150.0,
-        "photos": ["url1", "url2"]   # if present, replaces ALL existing photos
-    }
-    """
+def update_lot(lot_id):
     try:
         lid = uuid.UUID(lot_id)
-    except Exception:
+    except ValueError:
         return jsonify({"error": "invalid uuid"}), 400
 
     payload = request.get_json() or {}
-
-    name = payload.get("name")
-    description = payload.get("description")
-    min_price_raw = payload.get("min_price")
-    min_step_raw = payload.get("min_step")
-    current_price_raw = payload.get("current_price")
-
-    # photos key may or may not be present
-    photos_provided = "photos" in payload
-    photos_payload = payload.get("photos")
-
-    # Parse numeric values only if provided
-    min_price = None
-    min_step = None
-    current_price = None
-
-    try:
-        if min_price_raw is not None:
-            min_price = Decimal(str(min_price_raw))
-        if min_step_raw is not None:
-            min_step = Decimal(str(min_step_raw))
-        if current_price_raw is not None:
-            current_price = Decimal(str(current_price_raw))
-    except (InvalidOperation, TypeError):
-        return jsonify({"error": "min_price, min_step and current_price must be numeric"}), 400
-
-    # Business constraints
-    if min_price is not None and min_price < 1:
-        return jsonify({"error": "min_price must be >= 1"}), 400
-    if min_step is not None and min_step <= 1:
-        return jsonify({"error": "min_step must be > 1"}), 400
-
-    # Validate photos array if present
-    if photos_provided:
-        if not isinstance(photos_payload, list):
-            return jsonify({"error": "photos must be an array of URLs"}), 400
-        for url in photos_payload:
-            if not isinstance(url, str) or not url:
-                return jsonify({"error": "each photo url must be a non-empty string"}), 400
 
     with get_session() as s:
         lot = s.query(Lot).filter(Lot.id == lid).first()
         if not lot:
             return jsonify({"error": "not found"}), 404
 
-        # Apply field updates only if provided
-        if name is not None:
-            lot.name = name
-        if description is not None:
-            lot.description = description
-        if min_price is not None:
-            lot.min_price = min_price
-        if min_step is not None:
-            lot.min_step = min_step
+        # scalar fields (name, description, min_price, min_step, current_price)
+        if "name" in payload:
+            lot.name = payload["name"]
+        if "description" in payload:
+            lot.description = payload["description"]
+        if "min_price" in payload:
+            if payload["min_price"] is not None and payload["min_price"] < 1:
+                return jsonify({"error": "min_price must be >= 1"}), 400
+            lot.min_price = payload["min_price"]
+        if "min_step" in payload:
+            if payload["min_step"] is not None and payload["min_step"] <= 1:
+                return jsonify({"error": "min_step must be > 1"}), 400
+            lot.min_step = payload["min_step"]
         if "current_price" in payload:
-            # allow explicit null
-            lot.current_price = current_price if current_price_raw is not None else None
+            lot.current_price = payload["current_price"]
 
-        # Replace photos if provided
-        if photos_provided:
-            s.query(LotPhoto).filter(LotPhoto.lot_id == lot.id).delete()
-            for url in photos_payload:
-                s.add(LotPhoto(lot_id=lot.id, url=url))
+        # photos: додаємо нові, не видаляючи старі
+        if "photos" in payload and payload["photos"] is not None:
+            new_urls = payload["photos"]
+            if not isinstance(new_urls, list):
+                return jsonify({"error": "photos must be a list of URLs"}), 400
 
-        # Reload photos for response
-        photos = (
-            s.query(LotPhoto.url)
-            .filter(LotPhoto.lot_id == lot.id)
-            .all()
-        )
-        photo_urls = [row[0] for row in photos]
+            existing_urls = {p.url for p in lot.photos}
+            for url in new_urls:
+                if url not in existing_urls:
+                    lot.photos.append(LotPhoto(lot_id=lot.id, url=url))
 
+        # формуємо відповідь
         return jsonify(
             {
                 "id": str(lot.id),
                 "user_id": str(lot.user_id),
                 "name": lot.name,
                 "description": lot.description,
-                "min_price": float(lot.min_price),
-                "min_step": float(lot.min_step),
-                "current_price": float(lot.current_price)
-                if lot.current_price is not None
-                else None,
-                "photos": photo_urls,
+                "min_price": float(lot.min_price) if lot.min_price is not None else None,
+                "min_step": float(lot.min_step) if lot.min_step is not None else None,
+                "current_price": float(lot.current_price) if lot.current_price is not None else None,
+                "photos": [p.url for p in lot.photos],
             }
         ), 200
 
