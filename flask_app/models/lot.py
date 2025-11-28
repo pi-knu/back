@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, Numeric, ForeignKey
+from sqlalchemy import Column, String, Text, Numeric, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -28,7 +28,10 @@ class Lot(Base):
     min_price = Column(Numeric(12, 2), nullable=False)
 
     min_step = Column(Numeric(12, 2), nullable=False)
-
+    
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    
+    is_finished = Column(Boolean, default=False, nullable=False)
     current_price = Column(Numeric(12, 2), nullable=True)
 
     user = relationship("User", back_populates="lots")

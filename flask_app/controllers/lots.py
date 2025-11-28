@@ -89,6 +89,7 @@ def create_lot():
     try:
         with get_session() as s:
             # Create lot entity
+            # is_deleted та is_finished =False 
             lot = Lot(
                 user_id=user_id,
                 name=name,
@@ -117,6 +118,8 @@ def create_lot():
                     "current_price": float(lot.current_price)
                     if lot.current_price is not None
                     else None,
+                    "is_deleted": lot.is_deleted,
+                    "is_finished": lot.is_finished,
                     "photos": photos_payload,
                 }
             ), 201
@@ -161,6 +164,8 @@ def get_lot(lot_id: str):
                 "current_price": float(lot.current_price)
                 if lot.current_price is not None
                 else None,
+                "is_deleted": lot.is_deleted,
+                "is_finished": lot.is_finished,
                 "photos": photo_urls,
             }
         ), 200
@@ -179,7 +184,7 @@ def update_lot(lot_id):
         if not lot:
             return jsonify({"error": "not found"}), 404
 
-        # scalar fields (name, description, min_price, min_step, current_price)
+        # scalar fields 
         if "name" in payload:
             lot.name = payload["name"]
         if "description" in payload:
@@ -194,8 +199,12 @@ def update_lot(lot_id):
             lot.min_step = payload["min_step"]
         if "current_price" in payload:
             lot.current_price = payload["current_price"]
+        
+        if "is_finished" in payload:
+            lot.is_finished = bool(payload["is_finished"])
+        if "is_deleted" in payload:
+            lot.is_deleted = bool(payload["is_deleted"])
 
-        # photos: додаємо нові, не видаляючи старі
         if "photos" in payload and payload["photos"] is not None:
             new_urls = payload["photos"]
             if not isinstance(new_urls, list):
@@ -206,7 +215,6 @@ def update_lot(lot_id):
                 if url not in existing_urls:
                     lot.photos.append(LotPhoto(lot_id=lot.id, url=url))
 
-        # формуємо відповідь
         return jsonify(
             {
                 "id": str(lot.id),
@@ -216,6 +224,8 @@ def update_lot(lot_id):
                 "min_price": float(lot.min_price) if lot.min_price is not None else None,
                 "min_step": float(lot.min_step) if lot.min_step is not None else None,
                 "current_price": float(lot.current_price) if lot.current_price is not None else None,
+                "is_deleted": lot.is_deleted,
+                "is_finished": lot.is_finished,
                 "photos": [p.url for p in lot.photos],
             }
         ), 200
@@ -224,7 +234,7 @@ def update_lot(lot_id):
 def delete_lot(lot_id: str):
     """
     Delete a lot by ID.
-    Related lot photos are removed automatically 
+    Sets is_deleted = True instead of removing from DB.
     """
     try:
         lid = uuid.UUID(lot_id)
@@ -236,7 +246,9 @@ def delete_lot(lot_id: str):
         if not lot:
             return jsonify({"error": "not found"}), 404
 
-        s.delete(lot)
+        lot.is_deleted = True
+        
+        # To hard delete uncomment
+        # s.delete(lot)
 
-        # 204 No Content is typical for successful delete
         return "", 204
