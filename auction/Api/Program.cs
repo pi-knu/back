@@ -18,6 +18,11 @@ public class Program
         builder.Services.AddScoped<ILotRepository, LotRepository>();
         builder.Services.AddScoped<ILotService, LotService>();
         builder.Services.AddScoped<IBidRepository, BidRepository>();
+        builder.Services.AddScoped<IBidService, BidService>();
+        builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();
+        builder.Services.AddScoped<IPhotoService, PhotoService>();
+        builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+        builder.Services.AddScoped<IAuctionService, AuctionService>();
 
         var app = builder.Build();
         
