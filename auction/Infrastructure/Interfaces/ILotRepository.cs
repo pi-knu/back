@@ -7,5 +7,6 @@ public interface ILotRepository
     Task<Lot?> GetByIdAsync(Guid lotId);
     Task AddAsync(Lot lot);
     Task UpdateAsync(Lot lot);
-    Task DeleteAsync(Lot lot);
+    Task SoftDeleteAsync(Lot lot);
+    Task SaveChangesAsync();
 }

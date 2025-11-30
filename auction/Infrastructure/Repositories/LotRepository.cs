@@ -17,30 +17,30 @@ public class LotRepository : ILotRepository
     public async Task<Lot?> GetByIdAsync(Guid lotId)
     {
         return await _context.Lots
-            .FirstOrDefaultAsync(l=>l.Id == lotId);
+            .FirstOrDefaultAsync(l => l.Id == lotId);
     }
 
-    public Task AddAsync(Lot lot)
+    public async Task AddAsync(Lot lot)
     {
-         _context.Lots.Add(lot);
-        _context.SaveChangesAsync();
-        return Task.CompletedTask;
+        await _context.Lots.AddAsync(lot);
     }
 
     public Task UpdateAsync(Lot lot)
     {
         _context.Lots.Update(lot);
-        _context.SaveChangesAsync();
         return Task.CompletedTask;
     }
 
-    public Task DeleteAsync(Lot lot)
+    public Task SoftDeleteAsync(Lot lot)
     {
         lot.IsDeleted = true;
+        lot.IsActive = false;
         _context.Lots.Update(lot);
-        _context.SaveChangesAsync();
         return Task.CompletedTask;
     }
-    
-    
+
+    public Task SaveChangesAsync()
+    {
+        return _context.SaveChangesAsync();
+    }
 }
