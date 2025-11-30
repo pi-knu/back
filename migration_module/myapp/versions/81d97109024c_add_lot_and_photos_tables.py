@@ -38,10 +38,10 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
 
         sa.Column("min_price", sa.Numeric(12, 2), nullable=False),
-
         sa.Column("min_step", sa.Numeric(12, 2), nullable=False),
-
         sa.Column("current_price", sa.Numeric(12, 2), nullable=True),
+        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("false"), nullable=False),
+        sa.Column("is_finished", sa.Boolean(), server_default=sa.text("false"), nullable=False),
 
         sa.CheckConstraint("min_price >= 1", name="ck_lot_min_price_ge_1"),
         sa.CheckConstraint("min_step > 1", name="ck_lot_min_step_gt_1"),
