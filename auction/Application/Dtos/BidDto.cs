@@ -2,8 +2,7 @@ namespace Application.Dtos;
 
 public record BidDto
     (
+        Guid AuctionId,
         Guid UserId,
-        Guid LotId,
-        decimal Price,
-        DateTime CreatedAt
+        decimal Price
     );
