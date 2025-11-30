@@ -152,5 +152,6 @@ services:
     volumes:
        - ../lots_module:/app 
 
+networks:
   app-network:
     driver: bridge
