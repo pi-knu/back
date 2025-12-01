@@ -21,8 +21,8 @@ def upgrade() -> None:
     # --- 1. TABLE: LOT ---
     op.create_table(
         'lot',
-        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), primary_key=True),
-        sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("uuid_generate_v4()"), primary_key=True),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('is_deleted', sa.Boolean(), server_default=sa.text('false'), nullable=False),
@@ -32,8 +32,8 @@ def upgrade() -> None:
     # --- 2. TABLE: PHOTOS ---
     op.create_table(
         'photos',
-        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), primary_key=True),
-        sa.Column('lot_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('lot.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("uuid_generate_v4()"), primary_key=True),
+        sa.Column('lot_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('lot.id'), nullable=False),
         sa.Column('url', sa.String(length=1024), nullable=False),
         sa.Column('order', sa.Integer(), nullable=False),
         sa.CheckConstraint('"order" >= 1 AND "order" <= 8', name='ck_photos_order_range'),
@@ -47,8 +47,8 @@ def upgrade() -> None:
     
     op.create_table(
         'auction',
-        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), primary_key=True),
-        sa.Column('lot_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('lot.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("uuid_generate_v4()"), primary_key=True),
+        sa.Column('lot_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('lot.id'), nullable=False),
         
         sa.Column('min_price', sa.Numeric(precision=12, scale=2), nullable=False),
         sa.Column('min_step', sa.Numeric(precision=12, scale=2), nullable=False),
@@ -67,7 +67,7 @@ def upgrade() -> None:
     # --- 4. TABLE: BID ---
     op.create_table(
         'bid',
-        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), primary_key=True),
+        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text("uuid_generate_v4()"), primary_key=True),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
         sa.Column('auction_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('auction.id', ondelete='CASCADE'), nullable=False),
         
@@ -76,6 +76,31 @@ def upgrade() -> None:
         sa.Column('is_aborted', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     )
 
+    # function to update current_price = max bid 
+    op.execute("""
+        CREATE OR REPLACE FUNCTION update_auction_current_price()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            UPDATE auction
+            SET current_price = (
+                SELECT MAX(price)
+                FROM bid
+                WHERE bid.auction_id = COALESCE(NEW.auction_id, OLD.auction_id)
+                  AND bid.is_aborted = false
+            )
+            WHERE id = COALESCE(NEW.auction_id, OLD.auction_id);
+            
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+    """)
+    
+    op.execute("""
+        CREATE TRIGGER trigger_update_auction_price_on_bid
+        AFTER INSERT OR UPDATE OR DELETE ON bid
+        FOR EACH ROW
+        EXECUTE FUNCTION update_auction_current_price();
+    """)
 
 def downgrade() -> None:
     op.drop_table('bid')
