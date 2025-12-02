@@ -140,7 +140,7 @@ services:
 
   lots-service:
     build:
-      context: ../lots_module 
+      context: ../lots_module
     container_name: lots-service-dev
     env_file:
       - ../lots_module/.env
@@ -150,7 +150,26 @@ services:
       - app-network
     restart: unless-stopped
     volumes:
-       - ../lots_module:/app 
+       - ../lots_module:/app
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-dev
+    ports:
+      - "9001:9001"
+    env_file:
+      - ../minio-local/.env
+    volumes:
+      - ../minio-local/minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
 networks:
   app-network:

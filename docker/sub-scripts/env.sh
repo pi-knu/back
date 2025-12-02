@@ -11,4 +11,8 @@ copyEnvs() {
   cp ../docs/example.env ../docs/.env
 
   cp ../migration_module/example.env ../migration_module/.env
+
+  cp ../flask_app/example.env ../flask_app/.env
+
+  cp ../minio-local/example.env ../minio-local/.env
 }
