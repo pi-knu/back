@@ -126,6 +126,7 @@ You can also view the Swagger YAML files directly in:
 > * Make sure to start all required services using [`docker-compose.dev.yml`](#-development-mode)
 > * The **WebUI is available directly** (not proxied through Nginx).
 > *  The **API is not served through Nginx** in development mode.
+> * Already created basic bucket **data**
 
 ### 🔗 Access Points
 

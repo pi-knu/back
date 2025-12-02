@@ -142,7 +142,7 @@ services:
     image: minio/minio:latest
     container_name: minio-dev
     ports:
-      - "9000:9000"
+      - "9001:9001"
     env_file:
       - ../minio-local/.env
     volumes:
