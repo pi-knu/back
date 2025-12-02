@@ -138,6 +138,20 @@ services:
       timeout: 5s
       retries: 3
 
+  lots-service:
+    build:
+      context: ../lots_module 
+    container_name: lots-service-dev
+    env_file:
+      - ../lots_module/.env
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+       - ../lots_module:/app 
+
 networks:
   app-network:
     driver: bridge
