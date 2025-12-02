@@ -12,6 +12,7 @@
             - [Manual](#-production)
 2. 📖 **See Documentation**
     - [API](#api-documentation)
+    - [S3](#s3)
 
 ---
 
@@ -48,6 +49,9 @@ cp ../postgres/example.env ../postgres/.env
 cp ../auth/example.env ../auth/.env
 cp ../notification/example.env ../notification/.env
 cp ../docs/example.env ../docs/.env
+cp ../migration_module/example.env ../migration_module/.env
+cp ../flask_app/example.env ../flask_app/.env
+cp ../minio-local/example.env ../minio-local/.env
 ```
 
 #### 2. Start containers:
@@ -87,16 +91,54 @@ docker compose -f docker-compose.prod.yml up -d
 
 ---
 
-## Documentation
-### Api Documentation
-For see swagger docs you need work with dir: [docs](docs)
+---
 
-**How to run**:
+## 📘 Documentation
 
-You need up in [docker-compose.dev.yml](docker/docker-compose.dev.yml) services: `nginx`, `docs`
+### 📑 API Documentation (Swagger)
 
-And in browser view: http://locahost/docs
+To access the Swagger documentation, navigate to:
+➡️ [`docs`](docs)
 
-**OR**
+### 🚀 How to Run
 
-You can view swagger yaml docs in this [**dir**](docs/docs)
+1. Start the `nginx` and `docs` services from
+   [`docker-compose.dev.yml`](docker/docker-compose.dev.yml)
+
+2. Once the services are running, open in your browser:
+   👉 [http://localhost/docs](http://localhost/docs)
+
+### 📄 Alternative
+
+You can also view the Swagger YAML files directly in:
+➡️ [`docs/docs`](docs/docs)
+
+---
+
+# S3
+
+## 🗂 MinIO
+
+### ⚙️ Development Mode
+
+> **Note:**
+>
+> * Make sure to start all required services using [`docker-compose.dev.yml`](#-development-mode)
+> * The **WebUI is available directly** (not proxied through Nginx).
+> *  The **API is not served through Nginx** in development mode.
+
+### 🔗 Access Points
+
+* **API:**
+  [http://minio:9000](http://minio:9000)
+
+* **WebUI (Console):**
+  [http://172.21.0.2:9001](http://172.21.0.2:9001)
+  [http://127.0.0.1:9001](http://127.0.0.1:9001)
+
+### ⚙️ Production Mode
+
+> **Note:**
+>
+> * Work only with cloud S3
+---
